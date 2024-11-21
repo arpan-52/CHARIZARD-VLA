@@ -8,3 +8,7 @@ You can install the package using pip:
 
 ```bash
 pip install charizard-vla
+
+## Usage
+charizard-vla config.ini
+
