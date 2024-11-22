@@ -14,10 +14,12 @@ import configparser
 
 from .pokedex import *
 
+# from pokedex import *
+
 
 def main():
-    start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    tech_log = 'selfcal_{}.log'.format(start_time)
+    start_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    tech_log = 'charizard-vla_{}.log'.format(start_time)
 
     logger = configure_logger('charizard-vla', tech_log)
 
@@ -40,7 +42,6 @@ def main():
     working_dir = params['working_dir']
     ms_in = params['msname']  # Example: input measurement set
     vla_pipe_dir = params['vla_pipe_dir']  # Path to VLA pipeline directory
-    logger = logging.getLogger("CalibrationLogger")
 
     # Perform calibration
     job_id, prefix = initial_calibration(working_dir, ms_in, vla_pipe_dir, logger, 'initial_cal')
@@ -66,6 +67,7 @@ def main():
     logger.info(f"Calibration iteration completed. Proceeding to fine-tuning.")
 
     latest_casa_log = find_latest_log(working_dir)
+    print(latest_casa_log)
     flux_density, a_1, a_2, freq_GHz = extract_setjy_params(latest_casa_log,params['leakcal'])
     leakcal_source = params['leakcal']
 
@@ -91,6 +93,8 @@ def main():
 
     
     casa_dir  = params['casa_dir']
+    logger.info(pacal_dict)
+    logger.info(leakcal_dict)
     job_id, prefix = refine_calibration(working_dir, ms_in, casa_dir, logger, pacal_dict, leakcal_dict, 'refine_cal')
 
     # Track calibration job

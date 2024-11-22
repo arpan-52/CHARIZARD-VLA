@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="charizard-vla",
-    version="0.1.0",
+    version="0.2.6",
     author="Arpan Pal",
     author_email="arpan522000@gmail.com",
     description="VLA data processing package with polarization and self-calibration",

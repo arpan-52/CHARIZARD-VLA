@@ -83,6 +83,27 @@ def wait_for_jobs_to_finish(job_ids, base_output_dir, logger, prefix):
                         print(log_file)
                     else:
                         log_file = os.path.join(base_output_dir, f"{prefix}.log")
+                    
+                    # Check the condition
+                    if prefix == 'initial_cal':
+                        # Define input and output log file names
+                        input_log = log_file
+                        filtered_log = os.path.join(base_output_dir, f"filtered_{os.path.basename(log_file)}")
+                        
+                        # Construct the grep command
+                        grep_command = (
+                            f"grep -v -E "
+                            f'"SEVERE|plotms|ERROR: DISPLAY|ERROR: Could not create plot|error|ERROR:" '
+                            f"{input_log} > {filtered_log}"
+                        )
+                        
+                        try:
+                            # Run the command
+                            subprocess.run(grep_command, shell=True, check=True)
+                            logger.info(f"Filtered log written to {filtered_log}")
+                            log_file = filtered_log
+                        except subprocess.CalledProcessError as e:
+                            logger.info(f"An error occurred while filtering logs: {e}")
 
                     if os.path.exists(log_file):
                         with open(log_file, 'r') as log:
@@ -188,10 +209,7 @@ def parse_config(config_file):
             "ref_ant": config['DEFAULT'].get('ref_ant', '').strip(),
             "selfcal": config['DEFAULT'].getboolean('selfcal', False),
             "selfcal_ms": config['DEFAULT'].get('selfcal_ms', '').strip(),
-            "solint": [
-                interval.strip() for interval in config['DEFAULT'].get('solint', '').split(',')
-                if interval.strip()
-            ],
+            "solint": eval(config['DEFAULT'].get('solint', '[]')),
             "pcal": config['DEFAULT'].getint('pcal', 0),
             "apcal": config['DEFAULT'].getint('apcal', 0),
             "niter_s": config['DEFAULT'].getint('niter_s', 0),
@@ -295,34 +313,48 @@ def find_latest_log(log_dir):
 def extract_setjy_params(log_file, source_name):
     """
     Extract `setjy` parameters for a given source from a CASA log file.
+
     Args:
         log_file (str): Path to the CASA log file.
         source_name (str): Name of the source to search for in the log file.
+
     Returns:
-        str: CASA `setjy` command with the extracted parameters.
+        tuple: (flux_density, a_1, a_2, freq_ghz) - The extracted parameters.
+
+    Raises:
+        ValueError: If the source is not found in the log file or the format is incorrect.
     """
     # Define the regex pattern to match the relevant source entry
     pattern = (
-        rf"# Fitted spectrum for {source_name} with fitorder=2: "
-        r"Flux density = ([\d.]+) \+/- [\d.e+-]+ \(freq=([\d.]+) GHz\) spidx: "
-        r"a_1 \(spectral index\) =([\d.e+-]+) \+/- [\d.e+-]+ a_2=([\d.e+-]+) \+/- [\d.e+-]+"
+        rf"Fitted spectrum for {re.escape(source_name)} with fitorder=2:\s*"
+        r"Flux density\s*=\s*([\d.e+-]+)\s*\+/-\s*[\d.e+-]+\s*"
+        r"\(freq=([\d.e+-]+)\s*GHz\)\s*spidx:\s*a_1\s*\(spectral index\)\s*="
+        r"\s*([-.\d.e+-]+)\s*\+/-\s*[\d.e+-]+\s*a_2\s*=\s*([-.\d.e+-]+)\s*\+/-\s*[\d.e+-]+"
     )
     
-    # Open the log file and search for the entry
-    with open(log_file, 'r') as f:
-        log_content = f.read()
-        
-    match = re.search(pattern, log_content)
+    # Load the log file content
+    try:
+        with open(log_file, 'r') as f:
+            log_content = f.read()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file {log_file} was not found.")
     
+    # Debugging: Check if the log file content is loaded
+    print("Log file content loaded successfully.")  # Optional debugging
+    
+    # Search for the source's parameters using regex
+    match = re.search(pattern, log_content)
     if not match:
-        raise ValueError(f"Source {source_name} not found in the log file.")
+        print(f"No match found for source: {source_name}")  # Optional debugging
+        print(f"Regex used: {pattern}")  # Optional debugging
+        raise ValueError(f"Source {source_name} not found in the log file, or the format is incorrect.")
     
     # Extract parameters
     flux_density = float(match.group(1))
     freq_ghz = float(match.group(2))
     a_1 = float(match.group(3))
     a_2 = float(match.group(4))
-    
+
     return flux_density, a_1, a_2, freq_ghz
 
 def refine_calibration(working_dir, ms_in, casa_dir, logger, pacal, leakcal, prefix):
@@ -532,7 +564,7 @@ micromamba activate 38data
 def call_wsclean(working_dir, msname,imagename,logger,niter,datacolumn):
     pbs_script_content = f"""#!/bin/bash
 #PBS -N wsclean
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=2:ppn=10
 #PBS -l walltime=10:00:00
 #PBS -j oe
 #PBS -o {imagename}.log
