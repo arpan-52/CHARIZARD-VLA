@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/fde5c7b7-4784-4fa9-906e-694949d3be11)
+
 # Charizard-VLA
 
 **Charizard-VLA**: *Calibration and Highly Automated Radio Imaging with polariZation by Advanced Resource Distribution for VLA*
@@ -57,7 +59,7 @@ casa_dir = /home/apal/casa-6.6.4-34-py3.8.el8/
 vla_pipe_dir = /home/apal/casa-6.5.4-9-pipeline-2023.1.0.124/
 ```
 ## To make the CHARIZARD-VLA win the Pokemon battles,
-
+``` bash
 charizard-vla config.ini
 
 
