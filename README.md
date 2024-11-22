@@ -1,6 +1,8 @@
 # Charizard-VLA
 
-![Charizard-VLA](https://github.com/user-attachments/assets/fde5c7b7-4784-4fa9-906e-694949d3be11)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/fde5c7b7-4784-4fa9-906e-694949d3be11" width="800">
+</p>
 
 **Charizard-VLA**: *Calibration and Highly Automated Radio Imaging with polariZation by Advanced Resource Distribution for VLA*
 
