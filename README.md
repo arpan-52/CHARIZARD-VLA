@@ -20,6 +20,10 @@ Charizard-VLA is a powerful and automated pipeline for processing Very Large Arr
 
 ---
 
+## Citations
+
+Let me tell you, writing this code was the easy part—dealing with all the edge cases to make the pipeline bulletproof? That’s where the real fun (read: chaos) began. I made this for my own sanity, but if it saves yours too, that’s a win! All I ask is that you give me a shout-out (acknowledge) if you use it—at least until I’ve published my papers or get it listed on ASCL. Let’s keep it fun and ethical!
+
 ## Requirements
 
 Before running Charizard-VLA, ensure the following software and system dependencies are installed and configured:
@@ -34,7 +38,8 @@ Install Python dependencies via pip:
 ```bash
 pip install charizard-vla
 ```
-## Example config file
+## Example config file 
+The config file can have any name. Up to you!
 ```bash 
 [DEFAULT]
 
@@ -60,9 +65,9 @@ niter_s = 10000
 casa_dir = /home/apal/casa-6.6.4-34-py3.8.el8/
 vla_pipe_dir = /home/apal/casa-6.5.4-9-pipeline-2023.1.0.124/
 ```
-## To make the CHARIZARD-VLA win the Pokemon battles,
+## To win the Pokemon battles,
 ``` bash
-charizard-vla config.ini
+charizard-vla <config_file>
 
 
 
